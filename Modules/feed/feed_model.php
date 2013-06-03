@@ -18,10 +18,12 @@ defined('EMONCMS_EXEC') or die('Restricted access');
 class Feed
 {
     private $mysqli;
+    private $timestore;
 
-    public function __construct($mysqli)
+    public function __construct($mysqli,$timestore)
     {
         $this->mysqli = $mysqli;
+        $this->timestore = $timestore;
     }
 
     public function create($userid,$name,$datatype)
@@ -41,22 +43,18 @@ class Feed
         {
           $feedname = "feed_".$feedid;
 
-          if ($datatype!=3) {										
-            $result = $this->mysqli->query(
-            "CREATE TABLE $feedname (
-	      time INT UNSIGNED, data float,
-            INDEX ( `time` ))");
-          }
-
-          if ($datatype==3) {										
-            $result = $this->mysqli->query(										
-            "CREATE TABLE $feedname (
-	      time INT UNSIGNED, data float, data2 float,
-            INDEX ( `time` ))");
+          if ($datatype==1) {
+            // Create timestore feed
+            $this->timestore->create_node($feedid,10);
+          } elseif ($datatype==2) {										
+            $result = $this->mysqli->query("CREATE TABLE $feedname (time INT UNSIGNED, data float,INDEX ( `time` ))");
+          } elseif ($datatype==3) {										
+            $result = $this->mysqli->query("CREATE TABLE $feedname (time INT UNSIGNED, data float, data2 float,INDEX ( `time` ))");
           }
 
           return array('success'=>true, 'feedid'=>$feedid);										
         } else return array('success'=>false);
+
   }
 
   public function exists($feedid)
@@ -154,7 +152,7 @@ class Feed
     { 
       // $row->size = get_feedtable_size($row->id);
       // $row->time = strtotime($row->time)*1000;
-      //$row->tag = str_replace(" ","_",$row->tag);
+      // $row->tag = str_replace(" ","_",$row->tag);
       $feeds[] = $row; 
     }
     return $feeds;
@@ -269,7 +267,8 @@ class Feed
     $feedname = "feed_".trim($feedid)."";
 
     // a. Insert data value in feed table
-    $this->mysqli->query("INSERT INTO $feedname (`time`,`data`) VALUES ('$feedtime','$value')");
+    //$this->mysqli->query("INSERT INTO $feedname (`time`,`data`) VALUES ('$feedtime','$value')");
+    $this->timestore->post_values($feedid,$feedtime*1000,array($value),null);
 
     // b. Update feeds table
     $updatetime = date("Y-n-j H:i:s", $updatetime); 
@@ -341,61 +340,15 @@ class Feed
   public function get_data($feedid,$start,$end,$dp)
   {
     $feedid = intval($feedid);
-    $start = floatval($start);
-    $end = floatval($end);
+    $start = intval($start/1000);
+    $end = intval($end/1000);
     $dp = intval($dp);
 
-    if ($end == 0) $end = time()*1000;
+    if ($end == 0) $end = time();
 
-    $feedname = "feed_".trim($feedid)."";
-    $start = $start/1000; $end = $end/1000;
-
-    $data = array();
-    $range = $end - $start;
-    if ($range > 180000 && $dp > 0) // 50 hours
-    {
-      $td = $range / $dp;
-      $stmt = $this->mysqli->prepare("SELECT time, data FROM $feedname WHERE time BETWEEN ? AND ? LIMIT 1");
-      $t = $start; $tb = 0;
-      $stmt->bind_param("ii", $t, $tb);
-      $stmt->bind_result($dataTime, $dataValue);
-      for ($i=0; $i<$dp; $i++)
-      {
-        $tb = $start + intval(($i+1)*$td);
-        $stmt->execute();
-        if ($stmt->fetch()) {
-          if ($dataValue!=NULL) { // Remove this to show white space gaps in graph      
-            $time = $dataTime * 1000;
-            $data[] = array($time, $dataValue);
-          }
-        }
-        $t = $tb;
-      }
-    } else {
-      if ($range > 5000 && $dp > 0)
-      {
-        $td = intval($range / $dp);
-        $sql = "SELECT FLOOR(time/$td) AS time, AVG(data) AS data".
-          " FROM $feedname WHERE time BETWEEN $start AND $end".
-          " GROUP BY 1";
-      } else {
-        $td = 1;
-        $sql = "SELECT time, data FROM $feedname".
-          " WHERE time BETWEEN $start AND $end ORDER BY time DESC";
-      }
-     
-      $result = $this->mysqli->query($sql);
-      if($result) {
-        while($row = $result->fetch_array()) {
-          $dataValue = $row['data'];
-          if ($dataValue!=NULL) { // Remove this to show white space gaps in graph      
-            $time = $row['time'] * 1000 * $td;  
-            $data[] = array($time , $dataValue); 
-          }
-        }
-      }
-    }
-
+    $npoints = intval(($end - $start) / 30);
+    if ($npoints>1000) $npoints = 1000;
+    $data = json_decode($this->timestore->get_series($feedid,0,$npoints,$start,$end,null));
     return $data;
   }
 

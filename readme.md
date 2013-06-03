@@ -1,67 +1,58 @@
-# Emoncms v5.0
+# Emoncms v5.0 - timestore development branch
 
-See main site: http://emoncms.org
+1) Download, make and start timestore
 
-Emoncms is an open source energy visualisation web application, the main feature's include
+$ git clone http://mikestirling.co.uk/git/timestore.git
+$ cd timestore
+$ make
+$ cd src
+$ sudo ./timestore -d
 
-## Input processing
-Input processing allows for conversion and processing before storage, there are over 15 different input processes from simple calibration to power to kWh-per-day data, or histogram data.
+Fetch the admin key
 
-## Visualisation
-Zoom through large datasets with flot and ajax powered level-of-detail amazing super powered graphs!
+cd /var/lib/timestore
+nano adminkey.txt
 
-## Visual dashboard editor
-Create dashboards out of a series of widgets and visualisations with a fully visual drag and drop dashboard editor.
+copy the admin key which looks something like this: POpP)@H=1[#MJYX<(i{YZ.0/Ni.5,g~<
+the admin key is generated anew every time timestore is restarted.
 
-## Open Source
-We believe open source is a better way of doing things and that our cloud based web applications should also be open source.
+2) Download and setup the emoncms timestore branch
 
-Emoncms is part of the OpenEnergyMonitor project. A project to build a fully open source hardware and software energy monitoring platform.
+Download copy of the timestore development branch
 
-With Emoncms you can have full control of your data, you can install it on your own server or you can use this hosted service.
+git clone -b timestore https://github.com/emoncms/emoncms.git timestore
 
-Emoncms is licenced under the GPL Affero licence (AGPL)
+Create a mysql database for emoncms and enter database settings into settings.php.
 
-# Developers
-Emoncms is developed and has had contributions from the following people.
+Add a line to settings.php with the timestore adminkey:
+$timestore_adminkey = "POpP)@H=1[#MJYX<(i{YZ.0/Ni.5,g~<";
 
-- Trystan Lea		https://github.com/trystanlea (principal maintainer)
-- Ildefonso Martínez	https://github.com/ildemartinez
-- Matthew Wire		https://github.com/mattwire
-- Baptiste Gaultier	https://github.com/bgaultier
-- Paul Allen		https://github.com/MarsFlyer
-- James Moore		https://github.com/foozmeat		
-- Lloyda		https://github.com/lloyda
-- JSidrach		https://github.com/JSidrach
-- Jramer		https://github.com/jramer
-- Drsdre		https://github.com/drsdre
-- Dexa187		https://github.com/dexa187
-- Carlos Alonso Gabizó
+Create a user and login
 
-## Upgrading from version 4.0 (Modular emoncms)
+The development branch currently only implements timestore for realtime data and the feed/data api is restricted to timestore data only which means that daily data does not work. The use of timestore for daily data needs to be implemented.
 
-Download the latest version either by clicking on the zip icon in github or using git if you used git clone:
+The feed model methods implemented to use timestore so far are create, insert_data and get_data.
 
-    $ git pull origin master
-    
-Make a copy of your current settings.php file and create a new settings.php file from default.settings.php. Enter your emoncms database settings.
-Add the line:
- 
-    $updatelogin = true;
-    
-to settings.php to enable a special database update only session, be sure to remove this line from settings.php once complete.
+Try it out
 
-In your internet browser goto open the admin/view page:
+Navigate to the feeds tab, click on feed API helper, create a new feed by typing:
 
-    http://localhost/emoncms/admin/view
-    
-Click on the database update and check button to launch the database update script. 
-You should now see a list of changes to be performed on your existing emoncms database.
-You may at this point want to backup your input and users table before applying the changes.
-Once your happy with the changes click on apply changes to automatically apply all changes.
+http://localhost/timestore/feed/create.json?name=power&type=1
 
-That should be it.
+It should return {"success":true,"feedid":1}
 
-You may need to clear your cache if you find some of the interfaces buggy/missing.
+Navigate back to feed you should now see your power feed in the list.
+
+Navigate again to the api helper to fetch the insert data api url
+
+Call the insert data api a few times over say a minute (so that we have at least 6 datapoints - one every 10 seconds)
+Vary the value to make it more interesting:
+
+http://localhost/timestore/feed/insert.json?id=1&value=100.0
+
+Select the rawdata visualisation from the vis menu
+http://localhost/timestore/vis/rawdata&feedid=1
+
+zoom to the last couple of minutes to see the data.
 
 

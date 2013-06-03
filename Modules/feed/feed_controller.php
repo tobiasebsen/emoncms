@@ -17,11 +17,14 @@ defined('EMONCMS_EXEC') or die('Restricted access');
 
 function feed_controller()
 {
-    global $mysqli, $session, $route;
+    global $mysqli, $session, $route, $timestore_adminkey;
     $result = false;
 
+    require "Modules/feed/timestore_class.php";
+    $timestore = new Timestore($timestore_adminkey);
+
     include "Modules/feed/feed_model.php";
-    $feed = new Feed($mysqli);
+    $feed = new Feed($mysqli,$timestore);
 
     if ($route->format == 'html')
     {
