@@ -27,7 +27,7 @@
 
 function input_controller()
 {
-  global $mysqli, $user, $session, $route;
+  global $mysqli, $user, $session, $route, $datastore_basedir;
 
   // There are no actions in the input module that can be performed with less than write privileges
   if (!$session['write']) return array('content'=>false);
@@ -36,7 +36,7 @@ function input_controller()
   $result = false;
 
   require "Modules/feed/feed_model.php"; // 540
-  $feed = new Feed($mysqli);
+  $feed = new Feed($mysqli,$datastore_basedir);
 
   require "Modules/input/input_model.php"; // 295
   $input = new Input($mysqli,$feed);

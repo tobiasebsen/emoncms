@@ -35,6 +35,19 @@ class Datastore
     fclose($fh);
   }
 
+  public function update($feedid,$time,$value)
+  {
+    $fh = fopen($this->basedir."feed_$feedid", 'c+');
+    $filesize = filesize($this->basedir."feed_$feedid")-8;
+
+    $pos = $this->binarysearch($fh,$time,$filesize);
+    echo "POS: [$pos]";
+
+    fseek($fh,$pos);
+    fwrite($fh, pack("If",$time,$value));
+    fclose($fh);
+  }
+
   public function get_feed_data($feedid,$start,$end,$dp)
   {
     //echo $feedid." ".$start." ".$end." ".$dp."<br>";

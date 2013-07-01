@@ -283,28 +283,12 @@ class Feed
     $updatetime = intval($updatetime);
     $feedtime = intval($feedtime);
     $value = floatval($value);
-             
-    $feedname = "feed_".trim($feedid)."";
 
-    // a. update or insert data value in feed table
-    $result = $this->mysqli->query("SELECT * FROM $feedname WHERE time = '$feedtime'");
-
-    if (!$result) return $value;
-
-    $row = $result->fetch_array();
-    if ($row) $this->mysqli->query("UPDATE $feedname SET data = '$value', time = '$feedtime' WHERE time = '$feedtime'");
-    if (!$row) {$value = 0; $this->mysqli->query("INSERT INTO $feedname (`time`,`data`) VALUES ('$feedtime','$value')");}
+    $this->datastore->update($feedid,$feedtime,$value);
 
     // b. Update feeds table
     $updatetime = date("Y-n-j H:i:s", $updatetime); 
     $this->mysqli->query("UPDATE feeds SET value = '$value', time = '$updatetime' WHERE id='$feedid'");
-
-    //Check feed event if event module is installed
-    if (is_dir(realpath(dirname(__FILE__)).'/../event/')) {
-      require_once(realpath(dirname(__FILE__)).'/../event/event_model.php');
-      $event = new Event($this->mysqli);
-      $event->check_feed_event($feedid,$updatetime,$feedtime,$value);
-    }
     
     return $value;
   }
