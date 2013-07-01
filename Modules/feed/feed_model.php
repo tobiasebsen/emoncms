@@ -18,10 +18,14 @@ defined('EMONCMS_EXEC') or die('Restricted access');
 class Feed
 {
     private $mysqli;
+    private $datastore;
 
-    public function __construct($mysqli)
+    public function __construct($mysqli,$datastore_basedir)
     {
         $this->mysqli = $mysqli;
+
+        require "Modules/feed/datastore_class.php";
+        $this->datastore = new Datastore($datastore_basedir);
     }
 
     public function create($userid,$name,$datatype)
@@ -42,10 +46,7 @@ class Feed
           $feedname = "feed_".$feedid;
 
           if ($datatype!=3) {										
-            $result = $this->mysqli->query(
-            "CREATE TABLE $feedname (
-	      time INT UNSIGNED, data float,
-            INDEX ( `time` ))");
+            $this->datastore->create($feedid);
           }
 
           if ($datatype==3) {										
@@ -266,21 +267,11 @@ class Feed
     $feedtime = intval($feedtime);
     $value = floatval($value);
 
-    $feedname = "feed_".trim($feedid)."";
-
-    // a. Insert data value in feed table
-    $this->mysqli->query("INSERT INTO $feedname (`time`,`data`) VALUES ('$feedtime','$value')");
+    $this->datastore->post($feedid,$feedtime,$value);
 
     // b. Update feeds table
     $updatetime = date("Y-n-j H:i:s", $updatetime); 
     $this->mysqli->query("UPDATE feeds SET value = '$value', time = '$updatetime' WHERE id='$feedid'");
-
-    //Check feed event if event module is installed
-    if (is_dir(realpath(dirname(__FILE__)).'/../event/')) {
-      require_once(realpath(dirname(__FILE__)).'/../event/event_model.php');
-      $event = new Event($this->mysqli);
-      $event->check_feed_event($feedid,$updatetime,$feedtime,$value);
-    }
 
     return $value;
   }
@@ -325,7 +316,7 @@ class Feed
     $end = intval($end);
 
     $feedname = "feed_".trim($feedid)."";
-    $this->mysqli->query("DELETE FROM $feedname where `time` >= '$start' AND `time`<= '$end' LIMIT 1");
+    //$this->mysqli->query("DELETE FROM $feedname where `time` >= '$start' AND `time`<= '$end' LIMIT 1");
   }
 
   public function deletedatarange($feedid,$start,$end)
@@ -335,7 +326,7 @@ class Feed
     $end = intval($end/1000.0);
 
     $feedname = "feed_".trim($feedid)."";
-    $this->mysqli->query("DELETE FROM $feedname where `time` >= '$start' AND `time`<= '$end'");
+    //$this->mysqli->query("DELETE FROM $feedname where `time` >= '$start' AND `time`<= '$end'");
 
     return true;
   }
@@ -343,60 +334,13 @@ class Feed
   public function get_data($feedid,$start,$end,$dp)
   {
     $feedid = intval($feedid);
-    $start = floatval($start);
-    $end = floatval($end);
+    $start = floatval($start/1000);
+    $end = floatval($end/1000);
     $dp = intval($dp);
 
-    if ($end == 0) $end = time()*1000;
+    if ($end==0) $end = time();
 
-    $feedname = "feed_".trim($feedid)."";
-    $start = $start/1000; $end = $end/1000;
-
-    $data = array();
-    $range = $end - $start;
-    if ($range > 180000 && $dp > 0) // 50 hours
-    {
-      $td = $range / $dp;
-      $stmt = $this->mysqli->prepare("SELECT time, data FROM $feedname WHERE time BETWEEN ? AND ? LIMIT 1");
-      $t = $start; $tb = 0;
-      $stmt->bind_param("ii", $t, $tb);
-      $stmt->bind_result($dataTime, $dataValue);
-      for ($i=0; $i<$dp; $i++)
-      {
-        $tb = $start + intval(($i+1)*$td);
-        $stmt->execute();
-        if ($stmt->fetch()) {
-          if ($dataValue!=NULL) { // Remove this to show white space gaps in graph      
-            $time = $dataTime * 1000;
-            $data[] = array($time, $dataValue);
-          }
-        }
-        $t = $tb;
-      }
-    } else {
-      if ($range > 5000 && $dp > 0)
-      {
-        $td = intval($range / $dp);
-        $sql = "SELECT FLOOR(time/$td) AS time, AVG(data) AS data".
-          " FROM $feedname WHERE time BETWEEN $start AND $end".
-          " GROUP BY 1";
-      } else {
-        $td = 1;
-        $sql = "SELECT time, data FROM $feedname".
-          " WHERE time BETWEEN $start AND $end ORDER BY time DESC";
-      }
-     
-      $result = $this->mysqli->query($sql);
-      if($result) {
-        while($row = $result->fetch_array()) {
-          $dataValue = $row['data'];
-          if ($dataValue!=NULL) { // Remove this to show white space gaps in graph      
-            $time = $row['time'] * 1000 * $td;  
-            $data[] = array($time , $dataValue); 
-          }
-        }
-      }
-    }
+    $data = $this->datastore->get_feed_data($feedid,$start,$end,$dp);
 
     return $data;
   }

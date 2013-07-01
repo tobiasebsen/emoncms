@@ -11,6 +11,10 @@
   $server   = "localhost";
   $database = "";
 
+  // Create a directory called datastore to store feed data
+  // enter its location here:
+  $datastore_basedir = "/home/YOUR-USER-NAME/datastore/";
+
   /*
 
   Default router settings - in absence of stated path
