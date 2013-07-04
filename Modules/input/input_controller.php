@@ -42,7 +42,7 @@ function input_controller()
   $input = new Input($mysqli,$feed);
 
   require "Modules/input/process_model.php"; // 886
-  $process = new Process($mysqli,$input,$feed);
+  $process = new Process($mysqli,$input,$feed,$datastore_basedir);
 
   if ($route->format == 'html')
   {

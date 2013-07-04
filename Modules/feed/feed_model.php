@@ -284,7 +284,7 @@ class Feed
     $feedtime = intval($feedtime);
     $value = floatval($value);
 
-    $this->datastore->update($feedid,$feedtime,$value);
+    $this->datastore->ulvc($feedid,$feedtime,$value);
 
     // b. Update feeds table
     $updatetime = date("Y-n-j H:i:s", $updatetime); 
