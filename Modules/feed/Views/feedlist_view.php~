@@ -53,7 +53,6 @@ input[type="text"] {
     'name':{'title':"<?php echo _('Name'); ?>", 'type':"text"},
     'tag':{'title':"<?php echo _('Tag'); ?>", 'type':"text"},
     'datatype':{'title':"<?php echo _('Datatype'); ?>", 'type':"select", 'options':['TIMESTORE','HISTOGRAM']},
-    'interval':{'title':"<?php echo _('Interval'); ?>", 'type':"fixed"},
     'public':{'title':"<?php echo _('Public'); ?>", 'type':"icon", 'trueicon':"icon-globe", 'falseicon':"icon-lock"},
     'time':{'title':"<?php echo _('Updated'); ?>", 'type':"updated"},
     'value':{'title':"<?php echo _('Value'); ?>",'type':"value"},

@@ -60,7 +60,7 @@ function feed_controller()
         // write session required
         if ($session['write'])
         {
-            if ($route->action == "create") $result = $feed->create($session['userid'],get('name'),get('type'),get('prop'));
+            if ($route->action == "create") $result = $feed->create($session['userid'],get('name'),get('type'));
             if ($route->action == "emptybin") $result = $feed->permanently_delete_feeds($session['userid']);
 
             if ($feed->belongs_to_user(get('id'),$session['userid']))

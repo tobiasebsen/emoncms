@@ -1,10 +1,10 @@
 
 var feed = {
 
-  'create':function(name,type,prop)
+  'create':function(name,type,interval)
   {
     var result = {};
-    $.ajax({ url: path+"feed/create.json", data: "name="+name+"&type="+type+"&prop="+prop, dataType: 'json', async: false, success: function(data) {result = data;} });
+    $.ajax({ url: path+"feed/create.json", data: "name="+name+"&type="+type, dataType: 'json', async: false, success: function(data) {result = data;} });
     return result;
   },
 

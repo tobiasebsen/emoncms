@@ -66,7 +66,7 @@ var path = "<?php echo $path; ?>";
 var apikey = "";
 
 var feedid = urlParams['feedid'];
-var embed = urlParams['embed'] || false;
+var embed = urlParams['embed'];
 
 var placeholder_bound = $('#placeholder_bound');
 var placeholder = $('#placeholder').width(placeholder_bound.width()).height($('#placeholder_bound').height());

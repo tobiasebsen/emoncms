@@ -346,13 +346,7 @@ class Feed
 
     if ($end == 0) $end = time();
 
-    $result = $this->mysqli->query("SELECT `interval` FROM feeds WHERE id = '$feedid'");
-    $row = $result->fetch_array();
-
-    $interval = 10;
-    if (isset($row['interval'])) $interval = $row['interval'];
-
-    $npoints = intval(($end - $start) / $interval);
+    $npoints = intval(($end - $start) / (5));
     if ($npoints>1000) $npoints = 1000;
 
    //$npoints = 1000;

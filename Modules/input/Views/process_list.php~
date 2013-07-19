@@ -5,7 +5,7 @@
 
 <br><br>
 
-<h3>Configure input <?php echo $inputid; ?></h3>
+<h3>Input processing</h3>
 
 <table class="table">
 
