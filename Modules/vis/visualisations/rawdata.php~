@@ -28,13 +28,11 @@
 }
 </style>
 
-<br>
-
 <div id="vis-title"></div>
 
 <div id="placeholder_bound" style="width:100%; height:400px; position:relative; ">
-  <div id="placeholder"></div>
-  <div style="position:absolute; top:20px; left:45px;">
+  <div id="placeholder" style="position:absolute; top:0px;"></div>
+  <div style="position:absolute; top:18px; left:32px;">
 
     <div class='btn-group'>
       <button class='btn time' type='button' time='1'>D</button>
@@ -62,19 +60,25 @@
 
 <script id="source" language="javascript" type="text/javascript">
 
+
+//$("#placeholder").css('top',18);
+//$("#placeholder").css('left',32);
+
+var top_offset = 0;
+
 var path = "<?php echo $path; ?>";
 var apikey = "";
 
 var feedid = urlParams['feedid'];
-var embed = urlParams['embed'];
+var embed = urlParams['embed'] || false;
 
 var placeholder_bound = $('#placeholder_bound');
-var placeholder = $('#placeholder').width(placeholder_bound.width()).height($('#placeholder_bound').height());
-if (embed) placeholder.height($(window).height());
+var placeholder = $('#placeholder').width(placeholder_bound.width()).height($('#placeholder_bound').height()-top_offset);
+if (embed) placeholder.height($(window).height()-top_offset);
 
 $(window).resize(function(){
   placeholder.width(placeholder_bound.width());
-  if (embed) placeholder.height($(window).height());
+  if (embed) placeholder.height($(window).height()-top_offset);
   //plot();
 });
 
@@ -86,7 +90,7 @@ var data = [];
 
 $(function() {
 
-  if (embed==false) $("#vis-title").html("Raw data");
+  if (embed==false) $("#vis-title").html("<br>Raw data<br><br>");
   draw();
 
   $("#zoomout").click(function () {view.zoomout(); draw();});
@@ -95,12 +99,17 @@ $(function() {
   $('#left').click(function () {view.panleft(); draw();});
   $('.time').click(function () {view.timewindow($(this).attr("time")); draw();});
 
-  placeholder.bind("plotselected", function (event, ranges) { view.start = ranges.xaxis.from; view.end = ranges.xaxis.to; draw(); });
+  placeholder.bind("plotselected", function (event, ranges) 
+  { 
+    view.start = ranges.xaxis.from; 
+    view.end = ranges.xaxis.to; 
+    draw(); 
+  });
 
   function draw()
   {
     data = [];
-    data = feed.get_data(feedid,view.start,view.end,800);
+    data = feed.get_data(feedid,view.start,view.end,0);
 
     stats.calc(data);
     console.log(stats.mean);
@@ -114,10 +123,6 @@ $(function() {
     $.plot(placeholder, [data], options);
   }
 });
-
-
-
-
 
 </script>
 

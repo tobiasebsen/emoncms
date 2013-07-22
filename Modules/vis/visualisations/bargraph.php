@@ -1,114 +1,138 @@
-<!--
-   All Emoncms code is released under the GNU Affero General Public License.
-   See COPYRIGHT.txt and LICENSE.txt.
-
-    ---------------------------------------------------------------------
-    Emoncms - open source energy visualisation
-    Part of the OpenEnergyMonitor project:
-    http://openenergymonitor.org
--->
-
 <?php
+
+  // All Emoncms code is released under the GNU Affero General Public License.
+  // See COPYRIGHT.txt and LICENSE.txt.
+  // ---------------------------------------------------------------------
+  // Emoncms - open source energy visualisation
+  // Part of the OpenEnergyMonitor project:
+  // http://openenergymonitor.org
+
   global $path, $embed;
+
+  
 ?>
 
+<script type="text/javascript" src="<?php echo $path; ?>Modules/feed/feed.js"></script>
+
 <!--[if IE]><script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/excanvas.min.js"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.min.js"></script>
-<script language="javascript" type="text/javascript" src="<?php echo $path; ?>Lib/flot/jquery.flot.selection.min.js"></script>
-<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.time.min.js"></script>
+<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.time.js"></script>
+<script language="javascript" type="text/javascript" src="<?php echo $path; ?>Lib/flot/jquery.flot.selection.js"></script>
 
-<script language="javascript" type="text/javascript" src="<?php echo $path; ?>Lib/flot/date.format.js"></script>
+<script language="javascript" type="text/javascript" src="<?php echo $path;?>Modules/vis/visualisations/vis.helper.js"></script>
 
-<script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/visualisations/common/api.js"></script>
-<script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/visualisations/common/inst.js"></script>
-<script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/visualisations/common/proc.js"></script>
- 
-<?php if (!$embed) { ?>
-<h2>Bar graph: <?php echo $feedidname; ?></h2>
-<?php } ?>
+<style>
+#vis-title {
+  font-size:24px;
+  font-weight:bold;
+}
+</style>
 
-    <div id="graph_bound" style="height:400px; width:100%; position:relative; ">
-      <div id="graph"></div>
-      <div style="position:absolute; top:20px; right:20px;">
+<div id="vis-title"></div>
+<div id="#stats"></div>
 
-        <input class="time" type="button" value="D" time="1"/>
-        <input class="time" type="button" value="W" time="7"/>
-        <input class="time" type="button" value="M" time="30"/>
-        <input class="time" type="button" value="Y" time="365"/> | 
+<div id="placeholder_bound" style="width:100%; height:400px; position:relative; ">
+  <div id="placeholder" style="position:absolute; top:0px;"></div>
+  <div style="position:absolute; top:18px; left:32px;">
 
-        <input id="zoomin" type="button" value="+"/>
-        <input id="zoomout" type="button" value="-"/>
-        <input id="left" type="button" value="<"/>
-        <input id="right" type="button" value=">"/>
-
-      </div>
-
-        <h3 style="position:absolute; top:15px; left:50px;"><span id="stats"></span></h3>
+    <div class='btn-group'>
+      <button class='btn time' type='button' time='1'>D</button>
+      <button class='btn time' type='button' time='7'>W</button>
+      <button class='btn time' type='button' time='30'>M</button>
+      <button class='btn time' type='button' time='365'>Y</button>
     </div>
+
+    <div class='btn-group'>
+      <button id='zoomin' class='btn' >+</button>
+      <button id='zoomout' class='btn' >-</button>
+      <button id='left' class='btn' ><</button>
+      <button id='right' class='btn' >></button>
+    </div>
+
+    <div class='btn-group'>
+      <button id='csv' class='btn' >csv</button>
+      <button id='info' class='btn' >i</button>
+    </div>
+
+  </div>
+
+    <h3 style="position:absolute; top:0px; right:0px;"><span id="stats"></span></h3>
+</div>
 
 <script id="source" language="javascript" type="text/javascript">
 
-  var feedid = "<?php echo $feedid; ?>";
-  var feedname = "<?php echo $feedidname; ?>";
-  var path = "<?php echo $path; ?>";
-  var apikey = "<?php echo $apikey; ?>";
-  var embed = <?php echo $embed; ?>;
-  var valid = "<?php echo $valid; ?>";
+var interval = 3600*24;
 
-  var valid = "<?php echo $valid; ?>";
-  $('#graph').width($('#graph_bound').width());
-  $('#graph').height($('#graph_bound').height());
-  if (embed) $('#graph').height($(window).height());
+//$("#placeholder").css('top',18);
+//$("#placeholder").css('left',32);
 
-  var timeWindow = (3600000*24.0*30);				//Initial time window
-  var start = ((new Date()).getTime())-timeWindow;		//Get start time
-  var end = (new Date()).getTime();				//Get end time
+var top_offset = 0;
 
-  var graph_data = [];
-  vis_feed_data();
+var path = "<?php echo $path; ?>";
+var apikey = "";
 
-  $(window).resize(function(){
-    $('#graph').width($('#graph_bound').width());
-    if (embed) $('#graph').height($(window).height());
-    plot();
+var feedid = urlParams['feedid'];
+var embed = urlParams['embed'] || false;
+
+var placeholder_bound = $('#placeholder_bound');
+var placeholder = $('#placeholder').width(placeholder_bound.width()).height($('#placeholder_bound').height()-top_offset);
+if (embed) placeholder.height($(window).height()-top_offset);
+
+$(window).resize(function(){
+  placeholder.width(placeholder_bound.width());
+  if (embed) placeholder.height($(window).height()-top_offset);
+  //plot();
+});
+
+var timeWindow = (3600000*24.0*7);
+view.start = +new Date - timeWindow;
+view.end = +new Date;
+
+var data = [];
+
+$(function() {
+
+  if (embed==false) $("#vis-title").html("<br>Bar graph<br><br>");
+  draw();
+
+  $("#zoomout").click(function () {view.zoomout(); draw();});
+  $("#zoomin").click(function () {view.zoomin(); draw();});
+  $('#right').click(function () {view.panright(); draw();});
+  $('#left').click(function () {view.panleft(); draw();});
+  $('.time').click(function () {view.timewindow($(this).attr("time")); draw();});
+
+  placeholder.bind("plotselected", function (event, ranges) 
+  { 
+    view.start = ranges.xaxis.from; 
+    view.end = ranges.xaxis.to; 
+    draw(); 
   });
 
-  function vis_feed_data()
-  {
-    if (valid) graph_data = get_feed_data(feedid,start,end,500);
-    plot();
-  }
+  placeholder.bind("plothover", function (event, pos, item) 
+  { 
+    if (item) $("#stats").html(item.datapoint[0]+" : "+item.datapoint[1]);
+  });
 
-  function plot()
+  function draw()
   {
-    var plot = $.plot($("#graph"), [{data: graph_data, bars: { show: true, align: "center", barWidth: 3600*18*1000, fill: true}}], {
-      grid: { show: true, hoverable: true, clickable: true },
-      xaxis: { mode: "time", localTimezone: true, min: start, max: end },
-      yaxis: {min: 0},
+    data = [];
+    data = feed.get_data(feedid,view.start,view.end,interval);
+
+    stats.calc(data);
+    console.log(stats.mean);
+
+    var options = {
+      //points: {show:true},
+      
+      bars: { show: true, align: "center", barWidth: 0.75*interval*1000, fill: true},
+	    xaxis: { mode: "time", min: view.start, max: view.end, minTickSize: [interval, "second"] },
+      grid: {hoverable: true, clickable: true},
       selection: { mode: "x" }
-    });
+	  }
+
+    $.plot(placeholder, [data], options);
   }
+});
 
-  //--------------------------------------------------------------------------------------
-  // Graph zooming
-  //--------------------------------------------------------------------------------------
-  $("#graph").bind("plotselected", function (event, ranges) { start = ranges.xaxis.from; end = ranges.xaxis.to; vis_feed_data(); });
-
-  $("#graph").bind("plothover", function (event, pos, item) { 
-    if (item)
-    {
-      var mdate = new Date(item.datapoint[0]);
-      $("#stats").html((item.datapoint[1]).toFixed(1)+"kWh | "+mdate.format("ddd, mmm dS, yyyy"));
-    }
-  });
-  //----------------------------------------------------------------------------------------------
-  // Operate buttons
-  //----------------------------------------------------------------------------------------------
-  $("#zoomout").click(function () {inst_zoomout(); vis_feed_data();});
-  $("#zoomin").click(function () {inst_zoomin(); vis_feed_data();});
-  $('#right').click(function () {inst_panright(); vis_feed_data();});
-  $('#left').click(function () {inst_panleft(); vis_feed_data();});
-  $('.time').click(function () {inst_timewindow($(this).attr("time")); vis_feed_data();});
-  //-----------------------------------------------------------------------------------------------
 </script>
 

@@ -85,7 +85,7 @@ function draw_multigraph_feedlist_editor()
   out += "<tr><td><select id='feedselect' style='width:120px;'>";
   for (z in feedlist)
   {
-    if (feedlist[z]['datatype']==1 || feedlist[z]['datatype']==2)
+    if (feedlist[z]['datatype']==0 || feedlist[z]['datatype']==1)
     {
       out += "<option value='"+feedlist[z]['id']+"' >"+feedlist[z]['name']+"</options>";
     }

@@ -16,9 +16,9 @@ defined('EMONCMS_EXEC') or die('Restricted access');
 global $path;
 ?>
   <script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/multigraph_edit.js"></script>
-<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.min.js"></script>
-<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.selection.min.js"></script>
- <script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.time.min.js"></script>
+<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.selection.js"></script>
+ <script language="javascript" type="text/javascript" src="<?php echo $path;?>Lib/flot/jquery.flot.time.js"></script>
 <script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/visualisations/common/api.js"></script>
 <script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/visualisations/common/inst.js"></script>
 <script language="javascript" type="text/javascript" src="<?php echo $path; ?>Modules/vis/visualisations/multigraph.js"></script>
@@ -93,7 +93,7 @@ global $path;
   out += '</select>';
   $("#select").html(out);
 
-  draw_options(widgets['realtime']['options']);
+  draw_options(widgets['rawdata']['options']);
 
   // 1) ON CLICK OF VISUALISATION OPTION:
 
@@ -115,7 +115,7 @@ global $path;
   $("#viewbtn").click(function(){
     var visurl = "";
     var vistype = $("#visselect").val();
-    visurl += path+"vis/"+vistype;
+    visurl += path+"vis/"+vistype+"?";
 
     // Here we go through all the options that are set and get their values creating a url string that gets the
     // visualisation. We also check for each feed if the feed is a public feed or not.
@@ -149,7 +149,7 @@ global $path;
     }
     else
     {
-      visurl += path+"vis/"+vistype;
+      visurl += path+"vis/"+vistype+"?";
       $(".options").each(function() {
         if ($(this).val()) visurl += "&"+$(this).attr("id")+"="+$(this).val();
       });
@@ -167,7 +167,7 @@ global $path;
  
       var type = box_options[z][1];
 
-      if (type == 1 || type == 2 || type == 3) 
+      if (type == 0 || type == 1) 
       {
         options_html += "<td>"+select_feed(box_options[z][0], feedlist, type)+"</td>";
       }

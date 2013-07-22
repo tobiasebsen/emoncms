@@ -9,7 +9,9 @@
   $username = "";
   $password = "";
   $server   = "localhost";
-  $database = "";
+  $database = "emoncms";
+
+  $timestore_adminkey = "";
 
   /*
 

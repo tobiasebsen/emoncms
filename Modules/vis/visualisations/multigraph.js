@@ -7,9 +7,9 @@
     var plotlist = [];
     for (z in multigraph_feedlist)
     {
-      if (multigraph_feedlist[z]['datatype']==1) plotlist[z] = {id: multigraph_feedlist[z]['id'], selected: 1, plot: {data: null, label: multigraph_feedlist[z]['name'], lines: { show: true, fill: multigraph_feedlist[z]['fill'] } } };
+      if (multigraph_feedlist[z]['datatype']==0) plotlist[z] = {id: multigraph_feedlist[z]['id'], selected: 1, plot: {data: null, label: multigraph_feedlist[z]['name'], lines: { show: true, fill: multigraph_feedlist[z]['fill'] } } };
 
-      if (multigraph_feedlist[z]['datatype']==2) plotlist[z] = {id: multigraph_feedlist[z]['id'], selected: 1, plot: {data: null, label: multigraph_feedlist[z]['name'], bars: { show: true, align: "left", barWidth: 3600*24*1000, fill: multigraph_feedlist[z]['fill']} } };
+      if (multigraph_feedlist[z]['datatype']==1) plotlist[z] = {id: multigraph_feedlist[z]['id'], selected: 1, plot: {data: null, label: multigraph_feedlist[z]['name'], bars: { show: true, align: "left", barWidth: 3600*24*1000, fill: multigraph_feedlist[z]['fill']} } };
 
       if (multigraph_feedlist[z]['left']==true) plotlist[z].plot.yaxis = 1;
       if (multigraph_feedlist[z]['right']==true) plotlist[z].plot.yaxis = 2;
@@ -39,7 +39,7 @@
     for(var i in plotlist) {
       if (timeWindowChanged) plotlist[i].plot.data = null;
       if (plotlist[i].selected) {        
-        if (!plotlist[i].plot.data) plotlist[i].plot.data = get_feed_data(plotlist[i].id,start,end,400);
+        if (!plotlist[i].plot.data) plotlist[i].plot.data = get_feed_data(plotlist[i].id,start,end,0);
         if ( plotlist[i].plot.data) plotdata.push(plotlist[i].plot);
       }
     }

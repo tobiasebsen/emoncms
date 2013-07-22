@@ -346,16 +346,29 @@ class Feed
 
     if ($end == 0) $end = time();
 
-    $result = $this->mysqli->query("SELECT `interval` FROM feeds WHERE id = '$feedid'");
-    $row = $result->fetch_array();
+    if ($dp == 0)
+    {
+      $result = $this->mysqli->query("SELECT `interval` FROM feeds WHERE id = '$feedid'");
+      $row = $result->fetch_array();
 
-    $interval = 10;
-    if (isset($row['interval'])) $interval = $row['interval'];
+      $interval = 10;
+      if (isset($row['interval'])) $interval = $row['interval'];
 
-    $npoints = intval(($end - $start) / $interval);
-    if ($npoints>1000) $npoints = 1000;
+      $start = round($start/$interval)*$interval;
+      $end = round($end/$interval)*$interval;
+      $npoints = round(($end - $start) / $interval);
+   
+      if ($npoints>1000) $npoints = 1000;
+      $npoints = 1000;
+    }
+    else
+    {
+      $interval = $dp;
+      $start = round($start/$interval)*$interval;
+      $npoints = round(($end - $start) / $interval);
+      $end = $start+(($npoints-1)*$interval);
+    }
 
-   //$npoints = 1000;
     $data = json_decode($this->timestore->get_series($feedid,0,$npoints,$start,$end,null));
     return $data;
   }

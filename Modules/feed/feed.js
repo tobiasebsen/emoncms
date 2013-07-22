@@ -29,12 +29,12 @@ var feed = {
 
 
   // if ($route->action == 'data') $result = $feed->get_data(get('id'),get('start'),get('end'),get('dp'));
-  'get_data':function(feedid,start,end,dp)
+  'get_data':function(feedid,start,end,interval)
   {
     var feedIn = [];
     $.ajax({                                      
       url: path+'feed/data.json',                         
-      data: "&apikey="+apikey+"&id="+feedid+"&start="+start+"&end="+end+"&dp="+dp,
+      data: "&apikey="+apikey+"&id="+feedid+"&start="+start+"&end="+end+"&dp="+interval,
       dataType: 'json',
       async: false,                      
       success: function(data_in) { feedIn = data_in; } 
