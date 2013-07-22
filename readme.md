@@ -6,6 +6,7 @@ Timestore is time-series database designed specifically for time-series data dev
 
 **Faster Query speeds**
 With timestore feed data query requests are about 10x faster (2700ms using mysql vs 210ms using timestore).
+*Note:* initial benchmarks show timestore request time to be around 45ms need to investigate the slightly slower performance may be on the emoncms end rather than timestore.
 
 **Reduced Disk use**
 Disk use is also much smaller, A test feed stored in an indexed mysql table used 170mb, stored using timestore which does not need an index and is based on a fixed time interval the same feed used 42mb of disk space. 
