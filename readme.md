@@ -1,60 +1,86 @@
 # Emoncms v5.0 - timestore development branch
 
+## Emoncms powered by timestore
+
+Timestore is time-series database designed specifically for time-series data developed by Mike Stirling.
+
+[mikestirling.co.uk/redmine/projects/timestore](mikestirling.co.uk/redmine/projects/timestore)
+
+**Faster Query speeds**
+With timestore feed data query requests are about 10x faster (2600ms using mysql vs 210ms using timestore).
+
+**Reduced Disk use**
+Disk use is also much smaller, A test feed stored in an indexed mysql table used 170mb, stored using timestore which does not need an index and is based on a fixed time interval the same feed used 42mb of disk space. 
+
+**In-built averaging**
+Timestore also has an additional benefit of using averaged layers which ensures that requested data is representative of the window of time each datapoint covers.
+
+## Setup and test
+
+The instructions below are for setting up a new installation of emoncms using timestore on the raspberrypi and dont yet cover upgrading or conversion of existing feeds and wont yet work with existing input processing settings. 
+
+If you want to test timestore while maintaining your current setup, create the timestore installation in a new folder and create a new mysql database for use with it.
+
 ### 1) Download, make and start timestore
 
-    git clone http://mikestirling.co.uk/git/timestore.git
+    cd /home/pi
+    git clone https://github.com/mikestir/timestore.git
     cd timestore
+    git checkout float
     make
-    cd src
-    sudo ./timestore -d
+    sudo mkdir /var/lib/timestore
+    cd /home/pi/timestore/src
+    sudo ./timestore
 
-### Fetch the admin key
+*Note:* run "sudo ./timestore -d" to run in terminal, not as a deamon.
+
+### 2) Use timestore branch of emoncms
+
+Switch an existing installation over to the timestore branch:
+
+    cd /var/www/emoncms
+    git pull
+    git checkout timestore
+
+or to create a new emoncms installation in a folder called timestore: 
+
+    cd /var/www
+    git clone -b timestore https://github.com/emoncms/emoncms.git timestore
+
+### 3) Use timestore branch of raspberrypi
+
+    cd /var/www/timestore/Modules/raspberrypi (or cd /var/www/emoncms/Modules/raspberrypi)
+    git pull
+    git checkout timestore
+
+### 4) Fetch the timestore admin key
 
     cd /var/lib/timestore
     nano adminkey.txt
 
 copy the admin key which looks something like this: POpP)@H=1[#MJYX<(i{YZ.0/Ni.5,g~<
-the admin key is generated anew every time timestore is restarted.
+the admin key is generated a new every time timestore is restarted.
 
-### 2) Download and setup the emoncms timestore branch
+### 5) Settings.php
 
-Download copy of the timestore development branch
+Open to edit settings.php
 
-    git clone -b timestore https://github.com/emoncms/emoncms.git timestore
+    cd /var/www/timestore (or cd /var/www/emoncms)
+    rm settings.php
+    cp default.settings.php settings.php
+    nano settings.php
 
-Create a mysql database for emoncms and enter database settings into settings.php.
+Insert mysql database settings, create a new mysql database if necessary.
+Insert timestore admin apikey as found in step 4 above.
 
-Add a line to settings.php with the timestore adminkey:
+### 6) Update database
 
-    $timestore_adminkey = "POpP)@H=1[#MJYX<(i{YZ.0/Ni.5,g~<";
-
-Create a user and login
-
-The development branch currently only implements timestore for realtime data and the feed/data api is restricted to timestore data only which means that daily data does not work. The use of timestore for daily data needs to be implemented.
-
-The feed model methods implemented to use timestore so far are create, insert_data and get_data.
+If your using an existing database login with your admin user and run database update. If you have created a new database you should only need to create a user and login, the database tables will get created when you first load emoncms.
 
 ### Try it out
 
-Navigate to the feeds tab, click on feed API helper, create a new feed by typing:
+Setup the raspberrypi module as usual, make sure the gateway script is running.
+Use input processing to create timestore feeds, set the fixed data interval rate to that of your monitoring hardware. Try out the rawdata, bargraph and multigraph visualisations.
 
-    http://localhost/timestore/feed/create.json?name=power&type=1
-
-It should return {"success":true,"feedid":1}
-
-Navigate back to feed you should now see your power feed in the list.
-
-Navigate again to the api helper to fetch the insert data api url
-
-Call the insert data api a few times over say a minute (so that we have at least 6 datapoints - one every 10 seconds)
-Vary the value to make it more interesting:
-
-    http://localhost/timestore/feed/insert.json?id=1&value=100.0
-
-Select the rawdata visualisation from the vis menu
-
-    http://localhost/timestore/vis/rawdata&feedid=1
-
-zoom to the last couple of minutes to see the data.
 
 
