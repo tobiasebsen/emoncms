@@ -48,7 +48,7 @@
       <div class="opt opt-feed-interval input-prepend input-append">
         <span class="add-on">Interval</span>
         <select style="width:60px">
-        <option>5s</option><option>10s<option>15s</option>
+        <option>5s</option><option>10s<option>15s</option><option>30s</option><option>60s</option>
         </select>
       </div>
 

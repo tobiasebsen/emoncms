@@ -359,7 +359,6 @@ class Feed
       $npoints = round(($end - $start) / $interval);
    
       if ($npoints>1000) $npoints = 1000;
-      $npoints = 1000;
     }
     else
     {
