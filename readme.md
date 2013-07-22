@@ -1,13 +1,11 @@
-# Emoncms v5.0 - timestore development branch
-
-## Emoncms powered by timestore
+## Emoncms powered by timestore (dev)
 
 Timestore is time-series database designed specifically for time-series data developed by Mike Stirling.
 
 [mikestirling.co.uk/redmine/projects/timestore](mikestirling.co.uk/redmine/projects/timestore)
 
 **Faster Query speeds**
-With timestore feed data query requests are about 10x faster (2600ms using mysql vs 210ms using timestore).
+With timestore feed data query requests are about 10x faster (2700ms using mysql vs 210ms using timestore).
 
 **Reduced Disk use**
 Disk use is also much smaller, A test feed stored in an indexed mysql table used 170mb, stored using timestore which does not need an index and is based on a fixed time interval the same feed used 42mb of disk space. 
@@ -83,4 +81,8 @@ Setup the raspberrypi module as usual, make sure the gateway script is running.
 Use input processing to create timestore feeds, set the fixed data interval rate to that of your monitoring hardware. Try out the rawdata, bargraph and multigraph visualisations.
 
 
+### Blog posts:
 
+[http://openenergymonitor.blogspot.co.uk/2013/06/timestore-timeseries-database.html](http://openenergymonitor.blogspot.co.uk/2013/06/timestore-timeseries-database.html)
+[http://openenergymonitor.blogspot.co.uk/2013/06/rethinking-data-input-and-storage-core.html](http://openenergymonitor.blogspot.co.uk/2013/06/rethinking-data-input-and-storage-core.html)
+[http://openenergymonitor.blogspot.co.uk/2013/07/more-direct-file-storage-research.html](http://openenergymonitor.blogspot.co.uk/2013/07/more-direct-file-storage-research.html)
