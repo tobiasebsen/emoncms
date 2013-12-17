@@ -360,6 +360,13 @@ class Feed
     if ($row['engine']==Engine::PHPTIMESERIES) return $this->phptimeseries->get_data($feedid,$start,$end,$dp);
   }
   
+  public function get_minmax($feedid,$start,$end) {
+    $qresult = $this->mysqli->query("SELECT engine FROM feeds WHERE `id` = '$feedid'");
+    $row = $qresult->fetch_array();
+
+    if ($row['engine']==Engine::MYSQL) return $this->mysqltimeseries->get_minmax($feedid,$start,$end);
+  }
+  
   public function get_timestore_average($feedid,$start,$end,$interval)
   {
     $qresult = $this->mysqli->query("SELECT engine FROM feeds WHERE `id` = '$feedid'");

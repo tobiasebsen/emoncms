@@ -115,6 +115,30 @@ class MysqlTimeSeries
     return $data;
   }
   
+  public function get_minmax($feedid,$start,$end)
+  {
+    $feedid = intval($feedid);
+    $start = floatval($start);
+    $end = floatval($end);
+
+    if ($end == 0) $end = time()*1000;
+
+    $feedname = "feed_".trim($feedid)."";
+    $start = $start/1000; $end = $end/1000;
+
+    $data = array();
+    $stmt = $this->mysqli->prepare("SELECT MIN(data) AS min, MAX(data) AS max FROM $feedname WHERE time BETWEEN ? AND ?");
+    $stmt->bind_param("ii", $start, $end);
+    $stmt->bind_result($dataMin, $dataMax);
+    $stmt->execute();
+    if ($stmt->fetch()) {
+      if ($dataMin!=NULL) {
+        $data[] = array($dataMin, $dataMax);
+      }
+    }
+    return $data;
+  }
+
   public function export($feedid,$start)
   {
       // Feed id and start time of feed to export
