@@ -132,9 +132,7 @@ class MysqlTimeSeries
     $stmt->bind_result($dataMin, $dataMax);
     $stmt->execute();
     if ($stmt->fetch()) {
-      if ($dataMin!=NULL) {
-        $data[] = array($dataMin, $dataMax);
-      }
+      $data[] = array($dataMin, $dataMax);
     }
     return $data;
   }
